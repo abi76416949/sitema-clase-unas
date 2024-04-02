@@ -4,35 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
-class ClienteController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+class ClienteController extends Controller{
+    /*Display a listing of the resource.*/
+    public function index(){
         $clientes = Cliente::orderBy('RAZONNOMBRE', 'asc')->paginate(6);
         return view('clientes.listar', compact('clientes'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    /*Show the form for creating a new resource.*/
+    public function create(){
         return view('clientes.registrar');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-        $request->validate([
+    /*Store a newly created resource in storage.*/
+    public function store(Request $request){
+        $validated = Validator::make($request->all(),[
             'NRODOCUMENTO' => 'required|string|max:12',
             'TIPODOCUMENTO' => 'required|string|max:2',
             'LINK' => 'nullable|string|max:36',
@@ -57,38 +45,29 @@ class ClienteController extends Controller
             'PORCENTAJE_MORA' => 'nullable|numeric|min:0|max:100',
         ]);
 
+        if ($validated->fails()) {
+            //Session::flash('error', $validator->messages()->first());
+            return redirect()->back()->withInput();
+        }
+        //dd($validated);
         // Creación del cliente con los datos validados
         Cliente::create($request->all());
-
         // Redirección con un mensaje de éxito
         return redirect()->route('clientes.create')->with('success', 'Cliente creado con éxito.');
-    
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cliente $cliente)
-    {
-        //
+    /*Display the specified resource.*/
+    public function show(Cliente $cliente){
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Cliente $cliente)
-    {
-        //
+    /*Show the form for editing the specified resource.*/
+    public function edit(Cliente $cliente){
         return view('clientes.editar', compact('cliente'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Cliente $cliente)
-    {
-        //
-        $request->validate([
+    /*Update the specified resource in storage.*/
+    public function update(Request $request, Cliente $cliente){
+        $validated = Validator::make($request->all(),[
             'NRODOCUMENTO' => 'required|string|max:12',
             'TIPODOCUMENTO' => 'required|string|max:2',
             'LINK' => 'nullable|string|max:36',
@@ -112,6 +91,10 @@ class ClienteController extends Controller
             'PORCENTAJE_DESCUENTO' => 'nullable|numeric|min:0|max:100',
             'PORCENTAJE_MORA' => 'nullable|numeric|min:0|max:100',
         ]);
+        if ($validated->fails()) {
+            //Session::flash('error', $validator->messages()->first());
+            return redirect()->back()->withInput();
+        }
         $cliente->update($request->all());
         return redirect()->route('clientes.index')->with('success', 'Producto actualizado con éxito.');
     }
@@ -124,6 +107,5 @@ class ClienteController extends Controller
         //
         $cliente->delete();
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado con éxito.');
-
     }
 }
